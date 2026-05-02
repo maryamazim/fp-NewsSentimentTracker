@@ -32,4 +32,3 @@ This project uses web scraping with `newspaper`, language detection with `langde
 - Bar chart code: https://matplotlib.org/stable/gallery/lines_bars_and_markers/barh.html
 - Sentiment analysis: https://www.geeksforgeeks.org/python/python-sentiment-analysis-using-vader/
 - Suggested stop words issue solution: https://github.com/Alir3z4/stop-words; https://pypi.org/project/stop-words/
-- 
