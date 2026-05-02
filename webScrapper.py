@@ -1,5 +1,5 @@
 # News headline scraper, clusterer, and sentiment analyzer.
-# Pipeline: scrape, detect language, tokenize, cluster (Jaccard), score sentiment (VADER), generate HTML report.
+# Pipeline: scrape, detect language, tokenize, cluster (Jaccard), score sentiment (VADER), generate csv report and grpahic.
 
 import string
 import html
@@ -27,7 +27,6 @@ cluster_threshold = 0.25
 output_html = "news_report.html"
 
 # Source-branding noise that shows up across many headlines from the same
-# outlet and would falsely inflate similarity.
 noise_wrds = {"bbc", "cnn", "aljazeera", "al", "jazeera", "news"}
 
 # stop-word sets per language so we don't rebuild them on every call
@@ -80,12 +79,8 @@ def scrape_headlines(news_sites, per_site=50):
 
 def looks_like_english_script(text):
     """
-    Returns True if the text is predominantly Latin alphabet (i.e., the
-    kind of script English uses). This is a sanity check on top of
-    langdetect, which can mislabel short headlines.
-
-    We count letters only - digits, punctuation, and spaces don't count
-    either way - and require that at least 80% of letters be ASCII.
+    Returns True if the text is predominantly Latin alphabet. This works on top of langdetect,
+    which can mislabel short headlines. Requires that at least 80% of letters be ASCII.
     """
     letters = [ch for ch in text if ch.isalpha()]
     if not letters:
@@ -106,17 +101,13 @@ def detect_language(text):
     except LangDetectException:
         code = "en" if looks_like_english_script(text) else "unknown"
 
-    # Even if langdetect returned a code, double-check the script.
-    # If langdetect says "en" but the text is in Arabic characters,
-    # trust the script check, not the detector.
     if code == "en" and not looks_like_english_script(text):
         return "unknown"
 
     if code in AVAILABLE_LANGUAGES:
         return code
 
-    # Detected a language we don't have stop words for - still useful
-    # to know it's not English so we don't run VADER on it.
+    # Detected a language we don't have stop words for
     return code if not looks_like_english_script(text) else "en"
 
 def get_stop_word_set(lang_code):
@@ -137,7 +128,7 @@ def get_stop_word_set(lang_code):
 def tokenize(headline, lang_code):
     """
     Lowercase, strip punctuation, split, and remove stop words for the
-    detected language. Returns a set of meaningful words.
+    detected language. Returns set of meaningful words.
     """
     translator = str.maketrans(string.punctuation, " " * len(string.punctuation))
     cleaned = headline.lower().translate(translator)
@@ -199,9 +190,7 @@ def cluster_headlines(headlines, threshold=0.25):
 def score_cluster_sentiment(cluster):
     """
     Run VADER only on headlines that are both flagged as English AND
-    pass the Latin-script check. Belt and suspenders, because VADER
-    silently returns 0 for any text it doesn't recognize, which would
-    falsely label non-English clusters as 'Neutral.'
+    pass the Latin-script check
     """
     scores = []
     skipped = 0
