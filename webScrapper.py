@@ -27,7 +27,7 @@ cluster_threshold = 0.25
 output_html = "news_report.html"
 
 # Source-branding noise that shows up across many headlines from the same
-noise_wrds = {"bbc", "cnn", "aljazeera", "al", "jazeera", "news"}
+noise_wrds = {"bbc", "cnn", "aljazeera", "al", "jazeera", "news", "updates"}
 
 # stop-word sets per language so we don't rebuild them on every call
 stop_word = {}
